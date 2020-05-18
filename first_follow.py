@@ -65,21 +65,20 @@ def follow(symbol, terminals, nonterminals):
 
     for nonterminal in nonterminals:
         for production in nonterminals[nonterminal].productions:
-            for i in range(0, len(production)):
-                # symbol is in a middle of a production
-                if production[i] == symbol and i < len(production) - 1:
-                    # compute FIRST set of the rest of the production
-                    first_set = first_syms(production[i + 1:len(production)], terminals)
-                    # rest of the production can produce epsilon
-                    if terminals['eps'] in first_set:
-                        first_set.remove(terminals['eps'])
-                        if nonterminals[nonterminal] != symbol:
-                            sym_set |= follow(nonterminals[nonterminal], terminals, nonterminals)
-                    sym_set |= first_set
-                # symbol is at the end of a production
-                elif production[i] == symbol and i == len(production) - 1:
+            # symbol is at the end of a production
+            if symbol in production and production[-1] == symbol:
+                if nonterminals[nonterminal] != symbol:
+                    sym_set |= follow(nonterminals[nonterminal], terminals, nonterminals)
+            # symbol is in the middle of a production
+            elif symbol in production:
+                # compute FIRST set of the rest of the production
+                first_set = first_syms(production[production.index(symbol) + 1:len(production)], terminals)
+                # rest of the production can produce epsilon
+                if terminals['eps'] in first_set:
+                    first_set.remove(terminals['eps'])
                     if nonterminals[nonterminal] != symbol:
                         sym_set |= follow(nonterminals[nonterminal], terminals, nonterminals)
+                sym_set |= first_set
 
     return sym_set
 
@@ -101,6 +100,6 @@ if __name__ == "__main__":
     #first_set = first_syms([nonterminals['tprim']], terminals)
     #for sym in first_set:
     #    print(sym)
-    follow_set = follow(nonterminals['f'], terminals, nonterminals)
+    follow_set = follow(nonterminals['eprim'], terminals, nonterminals)
     for sym in follow_set:
         print(sym)
