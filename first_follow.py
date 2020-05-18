@@ -1,6 +1,3 @@
-from process_production import process_production, Terminal
-
-
 # this implements FIRST and FOLLOW sets computation
 # algorithms in use can be found in [1]
 #
@@ -81,25 +78,3 @@ def follow(symbol, terminals, nonterminals):
                 sym_set |= first_set
 
     return sym_set
-
-
-if __name__ == "__main__":
-    terminals = {"eps": Terminal("eps"), "$": Terminal("$")}
-    nonterminals = dict()
-    process_production("e", "t eprim", terminals, nonterminals)
-    process_production("eprim", "PLUS t eprim", terminals, nonterminals)
-    process_production("eprim", "Eps", terminals, nonterminals)
-    process_production("t", "f tprim", terminals, nonterminals)
-    process_production("tprim", "MULT f tprim", terminals, nonterminals)
-    process_production("tprim", "Eps", terminals, nonterminals)
-    process_production("f", "OPAR e CPAR", terminals, nonterminals)
-    process_production("f", "ID", terminals, nonterminals)
-    #print_productions(nonterminals['a'])
-    #print_productions(nonterminals['b'])
-
-    #first_set = first_syms([nonterminals['tprim']], terminals)
-    #for sym in first_set:
-    #    print(sym)
-    follow_set = follow(nonterminals['eprim'], terminals, nonterminals)
-    for sym in follow_set:
-        print(sym)
