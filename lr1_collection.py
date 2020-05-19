@@ -1,4 +1,4 @@
-from process_production import process_production, Terminal, Nonterminal
+from process_production import Nonterminal
 from first_follow import first_syms
 
 
@@ -82,11 +82,11 @@ def closure(items, terminals):
 
 
 # implement the GOTO function
-def goto(items, nonterminal, terminals):
+def goto(items, symbol, terminals):
     j = set()
     for item in items:
         # dot is not at the end of the production and dot is in front of a nonterminal
-        if item.dot < len(item.production) and item.production[item.dot] == nonterminal:
+        if item.dot < len(item.production) and item.production[item.dot] == symbol:
             j.add(Item(item.nonterminal, item.production, item.dot + 1, item.lookahead))
 
     return closure(j, terminals)
@@ -94,6 +94,7 @@ def goto(items, nonterminal, terminals):
 
 # create a collection of sets of LR(1) items
 def create_collection(nonterminals, terminals):
+    augment_grammar(nonterminals)
     # starting state is a closure of [__start -> * old_start , $] item
     # use frozenset because we need immutable sets if we want to hash them
     start_state = frozenset(closure({Item(nonterminals["__start"], nonterminals["__start"].productions[0], 0,
@@ -138,20 +139,3 @@ def print_collection(collection):
             print(item)
         print()
         i += 1
-
-
-if __name__ == "__main__":
-    terminals = {"eps": Terminal("eps"), "$": Terminal("$")}
-    nonterminals = dict()
-    process_production("s", "c c", terminals, nonterminals)
-    process_production("c", "C c", terminals, nonterminals)
-    process_production("c", "D", terminals, nonterminals)
-    augment_grammar(nonterminals)
-    # for sym in [nonterminals[key] for key in nonterminals]:
-    #    print_productions(sym)
-    # item = Item(nonterminals["__start"], nonterminals["__start"].productions[0], 0, terminals['$'])
-    # items = {item}
-    # items = closure(items, terminals)
-    # items = goto(items, nonterminals['c'], terminals)
-    (collection, start_state) = create_collection(nonterminals, terminals)
-    print_collection(collection)
