@@ -17,82 +17,84 @@ class ConflictError(Exception):
 
 
 # helper function which prints GOTO table
-def print_goto_table(goto_table, nonterminals_list):
-    header = ["   "] + [str(sym) + "  " for sym in nonterminals_list]
+def print_goto_table(goto_table):
+    header = ["   "] + goto_table[0]
     print(*header)
 
     state = 0
-    for row in goto_table:
+    for row in goto_table[1:len(goto_table)]:
         r = 'S' + str(state)
         for field in row:
             if field is None:
-                r += "  "
+                r += ' '
             else:
-                r += str(field) + " "
+                r += str(field)
         print(*r)
         state += 1
 
 
 # create ACTION and GOTO tables of the LR(1) parser
-def create_tables(collection, start_state, nonterminals, terminals):
-    # make lists out of data structures which hold collection of sets of LR(1) items, nonterminal symbols
-    # and terminal symbols
-    collection_list = list(collection.copy())
-    collection_list.remove(start_state)
-    collection_list.insert(0, start_state)
-
-    terminals_list = [terminals[sym] for sym in terminals]
-    terminals_list.remove(terminals["eps"])
-
-    nonterminals_list = [nonterminals[sym] for sym in nonterminals]
-    nonterminals_list.remove(nonterminals["__start"])
-
+def create_tables(collection, nonterminals, terminals):
     # create empty tables
-    action_table = [[None for y in range(len(terminals_list))] for x in range(len(collection_list))]
-    goto_table = [[None for y in range(len(nonterminals_list))] for x in range(len(collection_list))]
+    action_header = []
+    for terminal in terminals:
+        if terminal != "eps":
+            action_header.append(terminal)
+
+    action_table = [[None for y in range(len(terminals) - 1)] for x in range(len(collection))]
+    action_table.insert(0, action_header)
+
+    goto_header = []
+    for nonterminal in nonterminals:
+        if nonterminal != "__start":
+            goto_header.append(nonterminal)
+
+    goto_table = [[None for y in range(len(nonterminals) - 1)] for x in range(len(collection))]
+    goto_table.insert(0, goto_header)
 
     # iterate through every LR(1) item of every set of the collection
-    for i in range(len(collection_list)):
-        for item in collection_list[i]:
+    for i in range(len(collection)):
+        for item in collection[i]:
             # if dot is not at the end of a production
             if item.dot < len(item.production):
                 # the incoming symbol is the one in front of the dot
                 sym = item.production[item.dot]
                 # compute the GOTO state from this state on the incoming symbol
-                goto_state = goto(collection_list[i], sym, terminals)
+                goto_state = goto(collection[i], sym, terminals)
                 if len(goto_state) == 0:
                     continue
-                goto_state_index = collection_list.index(goto_state)
+                goto_state_index = collection.index(goto_state)
                 # if the incoming symbol is a terminal, we populate ACTION table
                 if sym.is_terminal:
-                    sym_index = terminals_list.index(sym)
+                    sym_index = action_table[0].index(sym.name)
                     # check whether there is a conflict on the ACTION table entry
-                    if action_table[i][sym_index] is None:
-                        action_table[i][sym_index] = ('s', goto_state_index)
-                    elif action_table[i][sym_index] != ('s', goto_state_index):
+                    if action_table[i + 1][sym_index] is None:
+                        action_table[i + 1][sym_index] = ('s', goto_state_index)
+                    elif action_table[i + 1][sym_index] != ('s', goto_state_index):
                         raise ConflictError("Grammar conflict! Aborting table generation!")
                 # if the incoming symbol is a nonterminal, we populate GOTO table
                 else:
-                    sym_index = nonterminals_list.index(sym)
+                    sym_index = goto_table[0].index(sym.name)
                     # check whether there is a conflict on the GOTO table entry
-                    if goto_table[i][sym_index] is None:
-                        goto_table[i][sym_index] = goto_state_index
-                    elif goto_table[i][sym_index] != goto_state_index:
+                    if goto_table[i + 1][sym_index] is None:
+                        goto_table[i + 1][sym_index] = goto_state_index
+                    elif goto_table[i + 1][sym_index] != goto_state_index:
                         raise ConflictError("Grammar conflict! Aborting table generation!")
-            # if the dot is at the end of a production
+            # if the dot is at the end of a production we add a reduce field
             else:
                 sym = item.lookahead
+                sym_index = action_table[0].index(sym.name)
                 # if the head of the item production is the start symbol, this is an accepting configuration
                 if item.nonterminal == nonterminals["__start"] and item.dot == 1 and sym == terminals['$']:
-                    action_table[i][terminals_list.index(sym)] = 'a'
+                    action_table[i + 1][sym_index] = 'a'
                 # else check whether we should reduce or if we have a conflict on the ACTION table entry
-                elif item.nonterminal != nonterminals["__start"] and action_table[i][terminals_list.index(sym)] is None:
-                    action_table[i][terminals_list.index(sym)] = ('r', item.nonterminal, item.production)
+                elif item.nonterminal != nonterminals["__start"] and action_table[i + 1][sym_index] is None:
+                    action_table[i + 1][sym_index] = ('r', item.nonterminal, item.production)
                 elif item.nonterminal != nonterminals["__start"] and \
-                        action_table[i][terminals_list.index(sym)] != ('r', item.nonterminal, item.production):
+                        action_table[i + 1][sym_index] != ('r', item.nonterminal, item.production):
                     raise ConflictError("Grammar conflict! Aborting table generation!")
 
-    return action_table, goto_table, terminals_list, nonterminals_list,
+    return action_table, goto_table
 
 
 if __name__ == "__main__":
@@ -107,7 +109,6 @@ if __name__ == "__main__":
     # items = {item}
     # items = closure(items, terminals)
     # items = goto(items, nonterminals['c'], terminals)
-    (collection, start_state) = create_collection(nonterminals, terminals)
-    (action_table, goto_table, terminals_list, nonterminals_list) = \
-        create_tables(collection, start_state, nonterminals, terminals)
-    print_goto_table(goto_table, nonterminals_list)
+    collection = create_collection(nonterminals, terminals)
+    (action_table, goto_table) = create_tables(collection, nonterminals, terminals)
+    print_goto_table(goto_table)

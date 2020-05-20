@@ -127,7 +127,12 @@ def create_collection(nonterminals, terminals):
                         has_new_items = True
         collection |= new_items
 
-    return collection, start_state
+    #
+    collection = list(collection)
+    collection.remove(start_state)
+    collection.insert(0, start_state)
+
+    return collection
 
 
 # helper function which prints the whole collection
