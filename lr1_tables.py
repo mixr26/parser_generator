@@ -34,14 +34,13 @@ def print_goto_table(goto_table):
 
 
 # create ACTION and GOTO tables of the LR(1) parser
-def create_tables(collection, nonterminals, terminals):
+def create_tables(collection, nonterminals, terminals, terminals_list):
     # create empty tables
     action_header = []
-    for terminal in terminals:
-        if terminal != "eps":
-            action_header.append(terminal)
+    for terminal in terminals_list:
+        action_header.append(terminal)
 
-    action_table = [[None for y in range(len(terminals) - 1)] for x in range(len(collection))]
+    action_table = [[None for y in range(len(terminals_list))] for x in range(len(collection))]
     action_table.insert(0, action_header)
 
     goto_header = []
@@ -51,6 +50,12 @@ def create_tables(collection, nonterminals, terminals):
 
     goto_table = [[None for y in range(len(nonterminals) - 1)] for x in range(len(collection))]
     goto_table.insert(0, goto_header)
+
+    # lay out all of the productions into one list
+    productions = []
+    for nonterminal in nonterminals:
+        for production in nonterminals[nonterminal].productions:
+            productions.append((nonterminals[nonterminal], production))
 
     # iterate through every LR(1) item of every set of the collection
     for i in range(len(collection)):
@@ -89,20 +94,21 @@ def create_tables(collection, nonterminals, terminals):
                     action_table[i + 1][sym_index] = 'a'
                 # else check whether we should reduce or if we have a conflict on the ACTION table entry
                 elif item.nonterminal != nonterminals["__start"] and action_table[i + 1][sym_index] is None:
-                    action_table[i + 1][sym_index] = ('r', item.nonterminal, item.production)
+                    action_table[i + 1][sym_index] = ('r', productions.index((item.nonterminal, item.production)))
                 elif item.nonterminal != nonterminals["__start"] and \
-                        action_table[i + 1][sym_index] != ('r', item.nonterminal, item.production):
+                        action_table[i + 1][sym_index] != ('r', productions.index((item.nonterminal, item.production))):
                     raise ConflictError("Grammar conflict! Aborting table generation!")
 
-    return action_table, goto_table
+    return action_table, goto_table, productions
 
 
 if __name__ == "__main__":
+    terminals_list = ['C', 'D', '$']
     terminals = {"eps": Terminal("eps"), "$": Terminal("$")}
     nonterminals = dict()
-    process_production("s", "c c", terminals, nonterminals)
-    process_production("c", "C c", terminals, nonterminals)
-    process_production("c", "D", terminals, nonterminals)
+    process_production("s", "c c", terminals, nonterminals, terminals_list)
+    process_production("c", "C c", terminals, nonterminals, terminals_list)
+    process_production("c", "D", terminals, nonterminals, terminals_list)
     # for sym in [nonterminals[key] for key in nonterminals]:
     #    print_productions(sym)
     # item = Item(nonterminals["__start"], nonterminals["__start"].productions[0], 0, terminals['$'])
@@ -110,5 +116,6 @@ if __name__ == "__main__":
     # items = closure(items, terminals)
     # items = goto(items, nonterminals['c'], terminals)
     collection = create_collection(nonterminals, terminals)
-    (action_table, goto_table) = create_tables(collection, nonterminals, terminals)
+    (action_table, goto_table, productions) = create_tables(collection, nonterminals, terminals, terminals_list)
     print_goto_table(goto_table)
+    print(action_table)

@@ -50,7 +50,7 @@ def print_productions(nonterminal):
 
 # process one production of the input file
 # every new terminal/nonterminal encountered is added to its respective dictionary
-def process_production(head, body, terminals, nonterminals):
+def process_production(head, body, terminals, nonterminals, terminals_list):
     if not head.islower():
         raise ParseError("Production head is not a nonterminal!")
 
@@ -73,6 +73,8 @@ def process_production(head, body, terminals, nonterminals):
             production.append(nonterminals[sym])
         # names of terminals should be uppercase
         elif sym.isupper():
+            if sym not in terminals_list:
+                raise ParseError("Terminal " + sym + " was not defined in the _tokens section!")
             if sym not in terminals.keys():
                 terminals[sym] = Terminal(sym)
             production.append(terminals[sym])
