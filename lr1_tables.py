@@ -1,5 +1,4 @@
-from lr1_collection import print_collection, create_collection, goto
-from process_production import process_production, Terminal
+from lr1_collection import goto
 
 
 # this implements the computation of ACTION and GOTO tables of an LR(1) parser as described in [1]
@@ -54,8 +53,9 @@ def create_tables(collection, nonterminals, terminals, terminals_list):
     # lay out all of the productions into one list
     productions = []
     for nonterminal in nonterminals:
-        for production in nonterminals[nonterminal].productions:
-            productions.append((nonterminals[nonterminal], production))
+        if nonterminal != "__start":
+            for production in nonterminals[nonterminal].productions:
+                productions.append((nonterminals[nonterminal], production))
 
     # iterate through every LR(1) item of every set of the collection
     for i in range(len(collection)):
@@ -100,22 +100,3 @@ def create_tables(collection, nonterminals, terminals, terminals_list):
                     raise ConflictError("Grammar conflict! Aborting table generation!")
 
     return action_table, goto_table, productions
-
-
-if __name__ == "__main__":
-    terminals_list = ['C', 'D', '$']
-    terminals = {"eps": Terminal("eps"), "$": Terminal("$")}
-    nonterminals = dict()
-    process_production("s", "c c", terminals, nonterminals, terminals_list)
-    process_production("c", "C c", terminals, nonterminals, terminals_list)
-    process_production("c", "D", terminals, nonterminals, terminals_list)
-    # for sym in [nonterminals[key] for key in nonterminals]:
-    #    print_productions(sym)
-    # item = Item(nonterminals["__start"], nonterminals["__start"].productions[0], 0, terminals['$'])
-    # items = {item}
-    # items = closure(items, terminals)
-    # items = goto(items, nonterminals['c'], terminals)
-    collection = create_collection(nonterminals, terminals)
-    (action_table, goto_table, productions) = create_tables(collection, nonterminals, terminals, terminals_list)
-    print_goto_table(goto_table)
-    print(action_table)
