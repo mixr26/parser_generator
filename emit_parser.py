@@ -1,8 +1,3 @@
-from lr1_collection import create_collection
-from lr1_tables import create_tables, print_goto_table
-from process_production import Terminal, process_production
-
-
 # final stage of the parser generator
 # generates a pair of .h and .cpp files that represent the specified parser
 # since we generate c++ code, grammar symbols and the lexer itself are represented by the eponymous classes
@@ -228,23 +223,3 @@ def create_body(action_table, goto_table, productions):
             "\t}\n"
             "}\n"
         ])
-
-
-if __name__ == "__main__":
-    terminals_list = ['C', 'D', 'WS', '$']
-    terminals = {"eps": Terminal("eps"), "$": Terminal("$")}
-    nonterminals = dict()
-    process_production("s", "c c", terminals, nonterminals, terminals_list)
-    process_production("c", "C c", terminals, nonterminals, terminals_list)
-    process_production("c", "D", terminals, nonterminals, terminals_list)
-    # for sym in [nonterminals[key] for key in nonterminals]:
-    #    print_productions(sym)
-    # item = Item(nonterminals["__start"], nonterminals["__start"].productions[0], 0, terminals['$'])
-    # items = {item}
-    # items = closure(items, terminals)
-    # items = goto(items, nonterminals['c'], terminals)
-    collection = create_collection(nonterminals, terminals)
-    (action_table, goto_table, productions) = create_tables(collection, nonterminals, terminals, terminals_list)
-    create_header_and_emit_manifest("", collection, goto_table, action_table, productions)
-    create_body(action_table, goto_table, productions)
-    print("aaaa")
