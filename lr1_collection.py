@@ -49,7 +49,7 @@ def augment_grammar(nonterminals):
             break
 
     start_sym.is_start = False
-    new_start_sym = Nonterminal("__start", True)
+    new_start_sym = Nonterminal("__start", True, None)
     new_start_sym.productions.append([start_sym])
     nonterminals["__start"] = new_start_sym
 

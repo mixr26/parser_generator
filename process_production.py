@@ -21,9 +21,11 @@ class Terminal(GrammarSymbol):
 
 # represents one nonterminal grammar symbol
 class Nonterminal(GrammarSymbol):
-    def __init__(self, name, is_start):
+    def __init__(self, name, is_start, type):
         self.is_start = is_start
         self.productions = []
+        self.code = []
+        self.type = type
         super(Nonterminal, self).__init__(False, name)
 
 
@@ -50,7 +52,7 @@ def print_productions(nonterminal):
 
 # process one production of the input file
 # every new terminal/nonterminal encountered is added to its respective dictionary
-def process_production(head, body, terminals, nonterminals, terminals_list):
+def process_production(head, body, type, code, terminals, nonterminals, terminals_list):
     if not head.islower():
         raise ParseError("Production head is not a nonterminal!")
 
@@ -59,7 +61,7 @@ def process_production(head, body, terminals, nonterminals, terminals_list):
         # first encountered terminal is the starting symbol
         if len(nonterminals.keys()) == 0:
             start = True
-        nonterminals[head] = Nonterminal(head, start)
+        nonterminals[head] = Nonterminal(head, start, type)
 
     production = []
     for sym in body.split():
@@ -69,7 +71,7 @@ def process_production(head, body, terminals, nonterminals, terminals_list):
         # names of nonterminals should be lowercase
         elif sym.islower():
             if sym not in nonterminals.keys():
-                nonterminals[sym] = Nonterminal(sym, False)
+                nonterminals[sym] = Nonterminal(sym, False, type)
             production.append(nonterminals[sym])
         # names of terminals should be uppercase
         elif sym.isupper():
@@ -81,3 +83,4 @@ def process_production(head, body, terminals, nonterminals, terminals_list):
         else:
             raise ParseError("Unexpected symbol " + sym + " in the production stream!")
     nonterminals[head].productions.append(production)
+    nonterminals[head].code.append(code)
