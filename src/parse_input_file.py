@@ -174,10 +174,10 @@ def do_the_magic(manifest_code, types, terminals, nonterminals, terminals_list):
 
 
 if __name__ == "__main__":
-    #if len(sys.argv) != 2:
-    #    report_error("Incorrect number of command line arguments! Should be only the input file name!", 0)
+    if len(sys.argv) != 2:
+        report_error("Incorrect number of command line arguments! Should be only the input file name!", 0)
 
-    filename = "example.mlg"
+    filename = sys.argv[1]
     if ".mlg" not in filename:
         report_error("Input file name should have .mll extension!", 0)
 
