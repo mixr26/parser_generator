@@ -122,7 +122,7 @@ def extract_code(line, line_num):
     if ccparr_index < ocparr_index:
         report_error("Ill-formed production!", line_num)
 
-    if ocparr_index < line.index("::="):
+    if line.count("::=") > 1 and ocparr_index < line.index("::="):
         report_error("Ill-formed production!", line_num)
 
     code = line[ocparr_index + 2:ccparr_index].strip()
@@ -159,7 +159,7 @@ def collect_productions(file, line_num, types, terminals, nonterminals, terminal
             process_production(current_head, body, type, code, terminals, nonterminals, terminals_list)
         elif line.startswith('|') and line.count('|') == 1 and line.count("%{") == 0 and current_head is not None:
             (code, line) = extract_code(line, line_num)
-            body = line.strip('|')[1].strip()
+            body = line.strip('|').strip()
             process_production(current_head, body, None, code, terminals, nonterminals, terminals_list)
         else:
             report_error("Ill-formed production!", line_num)
@@ -177,7 +177,7 @@ if __name__ == "__main__":
     #if len(sys.argv) != 2:
     #    report_error("Incorrect number of command line arguments! Should be only the input file name!", 0)
 
-    filename = "example2.mlg"
+    filename = "example.mlg"
     if ".mlg" not in filename:
         report_error("Input file name should have .mll extension!", 0)
 

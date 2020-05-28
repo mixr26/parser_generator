@@ -1,0 +1,24 @@
+_manifest:
+	#include <cstdlib>
+_types:
+	int
+_tokens:
+	NUM
+	MULT
+	PLUS
+	DIV
+	SUB
+	OPAR
+	CPAR
+	WS
+_grammar:
+	%{int}%		e ::= e PLUS t 			#{ $$ = $0 + $2; }#
+					| e SUB t 			#{ $$ = $0 - $2; }#
+					| t
+
+	%{int}%		t ::= t MULT f			#{ $$ = $0 * $2; }#
+					| t DIV f			#{ $$ = $0 / $2; }#
+					| f
+
+	%{int}%		f ::= OPAR e CPAR		#{ $$ = $1; }#
+					| NUM				#{ $$ = atoi($0); }#
