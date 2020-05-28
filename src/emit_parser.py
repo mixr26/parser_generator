@@ -15,6 +15,7 @@ def create_header_and_emit_manifest(manifest, types, collection, goto_table, act
             "#ifndef __MY_LITTLE_PARSER_H\n"
             "#define __MY_LITTLE_PARSER_H\n\n"
             "#include <stack>\n"
+            "#include <cstring>\n"
             "#include <fstream>\n"
             "#include <list>\n"
             "#include <memory>\n\n"
@@ -28,7 +29,7 @@ def create_header_and_emit_manifest(manifest, types, collection, goto_table, act
         # emit types union
         header.write("union types {\n")
         # write the terminals lexeme field
-        header.write("\tconst char* lexeme;\n")
+        header.write("\tchar* lexeme;\n")
         i = 0
         for type in types:
             header.write("\t" + type + " __" + str(i) + ";\n")
@@ -145,11 +146,19 @@ def emit_code(productions, body):
 
         # write the code itself
         if code != '':
-            code = "\t" + code + "\n"
+            code = "\t" + code + "\n\n"
             body.write(code)
         # if this is a trivial production and there is no user provided code, emit the default expression
         else:
-            body.write("\tparam__head = param__0;\n")
+            body.write("\tparam__head = param__0;\n\n")
+
+        # free the memory which holds the lexeme of popped terminals
+        param_num = len(production[1]) - 1
+        for sym in production[1]:
+            if sym.is_terminal:
+                body.write("\tdelete[](param__" + str(param_num) + ".lexeme);\n")
+            param_num -= 1
+        body.write("\n")
 
         # push the result onto the stack
         body.writelines([
@@ -243,7 +252,8 @@ def create_body(action_table, goto_table, productions):
             "\t\tif (action.first == 's') {\n"
             "\t\t\t// Push the token lexeme to the symbol stack.\n"
             "\t\t\tunion types term;\n"
-            "\t\t\tterm.lexeme = this->current_input->get_lexeme().c_str();\n"
+            "\t\t\tterm.lexeme = new char[this->current_input->get_lexeme().size() + 1];\n"
+            "\t\t\tstrcpy(term.lexeme, this->current_input->get_lexeme().c_str());\n"
             "\t\t\tthis->sym_stack.push(term);\n\n"
             "\t\t\t// Get the next input symbol and add it to the parse tree frontier.\n"
             "\t\t\tthis->current_input = this->lexer.get_next_word();\n"
