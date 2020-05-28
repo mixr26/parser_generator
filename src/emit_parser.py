@@ -122,13 +122,13 @@ def emit_code(productions, body):
         ])
 
         # prepare the parameters
-        param_num = 0
+        param_num = len(production[1]) - 1
         for sym in production[1]:
             body.writelines([
                 "\tunion types param__" + str(param_num) + "{sym_stack.top()};\n"
                                                            "\tsym_stack.pop();\n"
             ])
-            param_num += 1
+            param_num -= 1
         body.write("\n")
 
         # replace the placeholder parameters with the real ones
