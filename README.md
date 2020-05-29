@@ -74,6 +74,9 @@ User has an option to access the values of the reduced production's head and bod
 $$ stands for the value of the head, while $0, $1, $2,... stand for the values of first, second, third,... symbol of
 the body.
 
+It should be noted that all the values of grammar symbols should be synthesized and semantic actions can only occur at
+the end of the production body (e.g. postfix SDT with and S-attributed SDD).
+
 ## Example
 All which was previously explained can be seen in action by running the parser generator on the **example.mlg** file
 found in the *example/* directory. The file describes syntax-directed translation of simple arithmetic expressions, which
