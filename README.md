@@ -68,7 +68,7 @@ It must have four distinct sections:
   defined in uppercase letters. This section begins with a label '_tokens:'.
   * Grammar section defines the productions of a grammar. Each nonterminal which is the head of a production can be given
   a value type. A piece of C++ code can be associated with every production, which will be executed when that production is
-  reduced. Nonterminals MUST be defined in all lowercase letters.
+  reduced. Nonterminals MUST be defined in all lowercase letters. Empty productions contain only a symbol labeled as 'Eps'.
   
 User has an option to access the values of the reduced production's head and body symbols by using placeholders.
 $$ stands for the value of the head, while $0, $1, $2,... stand for the values of first, second, third,... symbol of
