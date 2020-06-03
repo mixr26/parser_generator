@@ -87,6 +87,8 @@ def goto(items, symbol, terminals):
     for item in items:
         # dot is not at the end of the production and dot is in front of a nonterminal
         if item.dot < len(item.production) and item.production[item.dot] == symbol:
+            if item.dot == 0 and item.production[0].name == "eps":
+                continue
             j.add(Item(item.nonterminal, item.production, item.dot + 1, item.lookahead))
 
     return closure(j, terminals)
@@ -118,6 +120,8 @@ def create_collection(nonterminals, terminals):
                     if len(new_items) != new_items_size:
                         has_new_items = True
             for sym in terminals:
+                if sym == "eps":
+                    continue
                 goto_set = goto(item_set, terminals[sym], terminals)
                 if len(goto_set) > 0:
                     new_items_size = len(new_items)

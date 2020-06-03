@@ -112,8 +112,8 @@ def emit_code(productions, body):
             i = 0
         code = head.code[i]
 
-        # if this is a nontrivial production and there is no user provided code, let it be
-        if code == '' and len(production[1]) > 1:
+        # if this is a nontrivial (or empty) production and there is no user provided code, let it be
+        if (code == '' and len(production[1]) > 1) or production[1][0].name == "eps":
             i += 1
             continue
 
@@ -219,15 +219,18 @@ def create_body(action_table, goto_table, productions):
         i = 0
         head = productions[0][0]
         for production in productions:
+            prod_len = len(production[1])
+            if production[1][0].name == "eps":
+                prod_len = 0
             line = "\tstd::make_tuple(Nonterminals::" + production[0].name + ", " \
-                   + str(len(production[1])) + ", "
+                   + str(prod_len) + ", "
 
             if production[0] != head:
                 head = production[0]
                 i = 0
             code = head.code[i]
 
-            if code == '' and len(production[1]) > 1:
+            if (code == '' and len(production[1]) > 1) or production[1][0].name == "eps":
                 line += "nullptr), \n"
             else:
                 line += head.name + "__" + str(i) + "), \n"

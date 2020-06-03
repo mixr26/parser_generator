@@ -60,8 +60,8 @@ def create_tables(collection, nonterminals, terminals, terminals_list):
     # iterate through every LR(1) item of every set of the collection
     for i in range(len(collection)):
         for item in collection[i]:
-            # if dot is not at the end of a production
-            if item.dot < len(item.production):
+            # if dot is not at the end of a production (except for empty productions)
+            if item.dot < len(item.production) and item.production[0].name != "eps":
                 # the incoming symbol is the one in front of the dot
                 sym = item.production[item.dot]
                 # compute the GOTO state from this state on the incoming symbol
