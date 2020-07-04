@@ -16,11 +16,12 @@ class FirstFollowError(Exception):
 # given a string of symbols, computes the FIRST set of the string
 def first_syms(symbols, terminals):
     seen_eps = True
+    tmp_set = set()
     for symbol in symbols:
         if not seen_eps:
             break
 
-        tmp_set = first(symbol, terminals)
+        tmp_set |= first(symbol, terminals)
         if terminals["eps"] in tmp_set:
             tmp_set.remove(terminals["eps"])
         else:
